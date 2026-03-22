@@ -2,14 +2,14 @@ package org.reiikaw.moviesrest.filter;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.reiikaw.moviesrest.exception.ServerLogicException;
-import org.reiikaw.moviesrest.service.JwtService;
+import org.reiikaw.moviesrest.service.auth.JwtService;
 import org.reiikaw.moviesrest.service.UserService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -20,13 +20,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_TOKEN = "Bearer ";
+
+    private static final List<String> PUBLIC_PATHS = Arrays.asList("/api/v1/auth/");
+    private static final List<String> PUBLIC_METHODS = Arrays.asList(HttpMethod.OPTIONS.name());
 
     private final JwtService jwtService;
     private final UserService userService;
@@ -42,14 +46,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
         try {
-            var authHeader = request.getHeader(AUTHORIZATION_HEADER);
-
-            if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, BEARER_TOKEN)) {
+            if (isPublicRequest(request)) {
                 filterChain.doFilter(request, response);
                 return;
+            }
+
+            var authHeader = request.getHeader(AUTHORIZATION_HEADER);
+            if (StringUtils.isEmpty(authHeader)) {
+                throw new ServerLogicException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Отсутствует токен доступа"
+                );
+            } else if (!StringUtils.startsWith(authHeader, BEARER_TOKEN)) {
+                throw new ServerLogicException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Некорректный токен доступа"
+                );
             }
 
             var jwt = authHeader.substring(BEARER_TOKEN.length());
@@ -78,7 +92,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     null,
                     new ServerLogicException(
                             HttpStatus.UNAUTHORIZED,
-                            "JWT provided is expired",
+                            "Токен доступа просрочен",
                             e.getClass().getName()
                     )
             );
@@ -90,5 +104,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     e
             );
         }
+    }
+
+    private boolean isPublicRequest(HttpServletRequest request) {
+        String reqUri = request.getRequestURI();
+        String method = request.getMethod();
+
+        if (PUBLIC_METHODS.contains(method)) {
+            return true;
+        }
+
+        return PUBLIC_PATHS.stream().anyMatch(reqUri::startsWith);
     }
 }

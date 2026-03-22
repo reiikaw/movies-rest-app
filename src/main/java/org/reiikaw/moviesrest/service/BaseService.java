@@ -1,18 +1,14 @@
 package org.reiikaw.moviesrest.service;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Optional;
 
-public interface BaseService<E, ID extends Serializable> {
+public interface BaseService<E, ID extends Serializable, D> {
 
     E save(E entity);
-    E update(E entity);
-    Optional<E> findById(ID id);
+    E update(ID id, D dto);
+    E findById(ID id);
     E deleteById(ID id);
-    List<E> findAll();
-    Page<E> findAll(Pageable pageable);
+    Page<E> findAll(Integer page, Integer size);
 }

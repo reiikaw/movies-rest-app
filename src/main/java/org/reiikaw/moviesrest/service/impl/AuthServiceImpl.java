@@ -6,8 +6,8 @@ import org.reiikaw.moviesrest.dto.auth.JwtAuthResponse;
 import org.reiikaw.moviesrest.entity.User;
 import org.reiikaw.moviesrest.exception.ServerLogicException;
 import org.reiikaw.moviesrest.repository.UserRepository;
-import org.reiikaw.moviesrest.service.AuthService;
-import org.reiikaw.moviesrest.service.JwtService;
+import org.reiikaw.moviesrest.service.auth.AuthService;
+import org.reiikaw.moviesrest.service.auth.JwtService;
 import org.reiikaw.moviesrest.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +33,8 @@ public class AuthServiceImpl implements AuthService {
         var user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .registeredAt(OffsetDateTime.now())
+                .registeredAt(OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .isAdmin(false)
                 .build();
         var savedUser = userService.create(user);
         var jwt = jwtService.generateToken(savedUser);

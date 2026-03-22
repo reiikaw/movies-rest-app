@@ -1,4 +1,4 @@
-package org.reiikaw.moviesrest.dto;
+package org.reiikaw.moviesrest.dto.response;
 
 public record ErrorResponse(
         String response,

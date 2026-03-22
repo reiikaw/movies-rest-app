@@ -5,6 +5,7 @@ import org.reiikaw.moviesrest.filter.JwtAuthFilter;
 import org.reiikaw.moviesrest.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -42,8 +43,17 @@ public class SecurityConfig {
                     corsConfiguration.setAllowCredentials(true);
                     return corsConfiguration;
                 }))
-                .authorizeHttpRequests(request -> request
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(((req, res, authException) -> {
+                            throw authException;
+                        }))
+                        .accessDeniedHandler((req, res, accessDeniedException) -> {
+                            throw accessDeniedException;
+                        }))
+                .authorizeHttpRequests(req -> req
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/entities/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(getAuthenticationProvider())

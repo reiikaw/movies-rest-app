@@ -2,7 +2,7 @@ package org.reiikaw.moviesrest.controller.contract;
 
 import jakarta.validation.Valid;
 import org.reiikaw.moviesrest.dto.auth.AuthRequest;
-import org.reiikaw.moviesrest.dto.ObjectResponse;
+import org.reiikaw.moviesrest.dto.response.ObjectResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface AuthControllerApi {
 
     @RequestMapping(
-            path = "/sign-up",
+            path = "/registration",
             method = RequestMethod.POST
     )
     ResponseEntity<ObjectResponse> signUp(@RequestBody @Valid AuthRequest request);
 
     @RequestMapping(
-            path = "/sign-in",
+            path = "/login",
             method = RequestMethod.POST
     )
     ResponseEntity<ObjectResponse> signIn(@RequestBody @Valid AuthRequest request);

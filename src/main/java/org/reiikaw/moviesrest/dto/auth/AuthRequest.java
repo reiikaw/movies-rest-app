@@ -9,17 +9,17 @@ import lombok.Data;
 @AllArgsConstructor
 public class AuthRequest {
 
-    @NotBlank(message = "The username must not be empty.")
+    @NotBlank(message = "Имя пользователя не должно быть пустое")
     @Pattern(
             regexp = "^[A-Za-z]{5,20}$",
-            message = "The username must contain only uppercase or lowercase Latin letters and must be between 5 and 20 characters long."
+            message = "Имя пользователя должно иметь длину от 5 до 20 символов и иметь символы латинского алфавита в нижним или верхнем регистре"
     )
     private String username;
 
-    @NotBlank(message = "The password must not be empty.")
+    @NotBlank(message = "Пароль не должен быть пустым")
     @Pattern(
             regexp = "^(?=(?:[^a-z]*[a-z]){3})(?=(?:[^A-Z]*[A-Z]){3})(?=(?:[^0-9]*[0-9]){2})[A-Za-z0-9]{8,40}$",
-            message = "The password must contain at least 3 lowercase Latin letters, at least 3 uppercase Latin letters, at least 2 digits from 0 to 9 inclusive and must be between 8 and 40 characters long."
+            message = "Пароль должен иметь длину от 8 до 40 символов и содержать минимум 3 символа латинского алфавита в нижнем регистре, 3 символа латинского алфавита в верхнем регистре и 2 цифры от 0 до 9"
     )
     private String password;
 }

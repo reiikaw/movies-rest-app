@@ -1,4 +1,4 @@
-package org.reiikaw.moviesrest.service;
+package org.reiikaw.moviesrest.service.auth;
 
 import org.reiikaw.moviesrest.dto.auth.AuthRequest;
 import org.reiikaw.moviesrest.dto.auth.JwtAuthResponse;

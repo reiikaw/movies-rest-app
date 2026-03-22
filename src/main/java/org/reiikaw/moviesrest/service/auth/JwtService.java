@@ -1,4 +1,4 @@
-package org.reiikaw.moviesrest.service;
+package org.reiikaw.moviesrest.service.auth;
 
 import io.jsonwebtoken.Claims;
 import org.springframework.security.core.userdetails.UserDetails;

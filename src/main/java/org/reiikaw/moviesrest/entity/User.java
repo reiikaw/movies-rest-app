@@ -2,6 +2,7 @@ package org.reiikaw.moviesrest.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,7 +14,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.OffsetDateTime;
@@ -30,6 +34,7 @@ import java.util.UUID;
 @ToString
 @Entity
 @Table(name = "users")
+@EntityListeners(AuditingEntityListener.class)
 public class User implements org.reiikaw.moviesrest.entity.Entity<UUID>, UserDetails {
 
     @Id
@@ -37,21 +42,23 @@ public class User implements org.reiikaw.moviesrest.entity.Entity<UUID>, UserDet
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "username", nullable = false, unique = true)
+    @Column(name = "username", nullable = false, unique = true, length = 255)
     private String username;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     @Column(name = "is_admin", nullable = false)
     private Boolean isAdmin = false;
 
     @Column(name = "registered_at", nullable = false)
+    @CreatedDate
     private OffsetDateTime registeredAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return this.isAdmin ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                            : List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override

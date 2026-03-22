@@ -1,11 +1,14 @@
 package org.reiikaw.moviesrest.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,20 +35,23 @@ public class Movie implements org.reiikaw.moviesrest.entity.Entity<UUID> {
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "director", nullable = false)
+    @Column(name = "director", nullable = false, length = 255)
     private String director;
 
     @Column(name = "release_year", nullable = false)
+    @JsonProperty("release_year")
     private Integer releaseYear;
 
     @Column(name = "rating", nullable = false)
+    @Min(0)
+    @Max(10)
     private Double rating = 0.0;
 
     @Column(name = "available", nullable = false)
-    private Boolean available;
+    private Boolean available = true;
 
     @Override
     public final boolean equals(Object o) {

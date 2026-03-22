@@ -21,6 +21,6 @@ public class ServerLogicException extends RuntimeException {
         super(message);
         this.statusCode = statusCode;
         this.message = message;
-        this.exceptionInitiatorClassName = ServerLogicException.class.getName();
+        this.exceptionInitiatorClassName = ServerLogicException.class.getSimpleName();
     }
 }
