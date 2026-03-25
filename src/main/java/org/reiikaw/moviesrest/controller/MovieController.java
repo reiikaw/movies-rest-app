@@ -2,9 +2,11 @@ package org.reiikaw.moviesrest.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.reiikaw.moviesrest.controller.contract.MovieControllerApi;
+import org.reiikaw.moviesrest.dto.MoviePatchRequest;
 import org.reiikaw.moviesrest.dto.MovieProcessDto;
 import org.reiikaw.moviesrest.dto.response.ObjectListResponse;
 import org.reiikaw.moviesrest.dto.response.ObjectResponse;
+import org.reiikaw.moviesrest.dto.response.PageInfo;
 import org.reiikaw.moviesrest.entity.Movie;
 import org.reiikaw.moviesrest.service.MovieService;
 import org.springframework.data.domain.Page;
@@ -25,17 +27,22 @@ public class MovieController implements MovieControllerApi {
         return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse(
                 "Сущность с идентификатором <%s> найдена успешно".formatted(id),
                 HttpStatus.OK.toString(),
-                movieService.findById(id)
+                movieService.findAvailableMovieById(id)
         ));
     }
 
     @Override
     public ResponseEntity<ObjectListResponse> getAllMovies(Integer page, Integer size) {
-        Page<Movie> objects = movieService.findAll(page, size);
+        Page<Movie> objectsPage = movieService.findAllAvailableMovies(page, size);
         return ResponseEntity.status(HttpStatus.OK).body(new ObjectListResponse<>(
-                "Список сущностей: всего найдено %s".formatted(objects.getTotalElements()),
+                "Список сущностей: всего найдено %s".formatted(objectsPage.getTotalElements()),
                 HttpStatus.OK.toString(),
-                objects
+                objectsPage.getContent(),
+                new PageInfo(
+                        objectsPage.getSize(),
+                        objectsPage.getNumber(),
+                        objectsPage.getTotalElements()
+                )
         ));
     }
 
@@ -54,16 +61,16 @@ public class MovieController implements MovieControllerApi {
         return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse(
                 "Сущность с идентификатором <%s> была успешно полностью обновлена".formatted(id),
                 HttpStatus.OK.toString(),
-                movieService.update(id, updateBody)
+                movieService.updateMovie(id, updateBody)
         ));
     }
 
     @Override
-    public ResponseEntity<ObjectResponse> partialUpdateMovie(UUID id, MovieProcessDto updateBody) {
+    public ResponseEntity<ObjectResponse> partialUpdateMovie(UUID id, MoviePatchRequest updateBody) {
         return ResponseEntity.status(HttpStatus.OK).body(new ObjectResponse(
                 "Сущность с идентификатором <%s> была успешно частично обновлена".formatted(id),
                 HttpStatus.OK.toString(),
-                movieService.update(id, updateBody)
+                movieService.patchMovie(id, updateBody)
         ));
     }
 

@@ -15,26 +15,21 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class MovieProcessDto {
+public class MoviePatchRequest {
 
-    @NotBlank(message = "Обязательный параметр <title> не должен быть пустым")
     @Size(min = 5, max = 255, message = "Длина параметра <title> должна быть от 5 до 255 символов")
     private String title;
 
-    @NotBlank(message = "Обязательный параметр <director> не должен быть пустым")
     @Size(min = 3, max = 255, message = "Длина параметра <director> должна быть от 3 до 255 символов")
     private String director;
 
     @JsonProperty("release_year")
     @Min(value = 1940, message = "Минимальный год для параметра <release_year> равен 1940")
-    @NotNull(message = "Обязательный параметр <release_year> не должен быть пустым")
     private Integer releaseYear;
 
     @Min(value = 0, message = "Рейтинг не может быть меньше 0.0")
     @Max(value = 10, message = "Рейтинг не может быть больше 10.0")
-    @NotNull(message = "Обязательный параметр <rating> не должен быть пустым")
     private Double rating = 0.0;
 
-    @NotNull(message = "Обязательный параметр <available> не должен быть пустым")
     private Boolean available = true;
 }

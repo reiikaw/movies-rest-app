@@ -1,9 +1,10 @@
 package org.reiikaw.moviesrest.dto.response;
 
-import org.springframework.data.domain.Page;
+import java.util.List;
 
 public record ObjectListResponse<T>(
         String response,
         String code,
-        Page<T> objects
+        List<T> objects,
+        PageInfo pageInfo
 ) { }

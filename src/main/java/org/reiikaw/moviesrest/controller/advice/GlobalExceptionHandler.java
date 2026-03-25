@@ -4,6 +4,7 @@ import org.reiikaw.moviesrest.dto.response.ErrorResponse;
 import org.reiikaw.moviesrest.exception.ServerLogicException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,11 +14,19 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.MismatchedInputException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -48,11 +57,11 @@ public class GlobalExceptionHandler {
         String errorMessages = bindingResult.getAllErrors()
                 .stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .collect(Collectors.joining(" "));
+                .collect(Collectors.joining(". "));
 
         log.error("Ошибка валидации: {}", errorMessages, e);
         return buildErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.UNPROCESSABLE_CONTENT,
                 errorMessages,
                 e.getClass().getSimpleName()
         );
@@ -72,14 +81,36 @@ public class GlobalExceptionHandler {
                 );
             }
             case MethodArgumentNotValidException ex -> buildValidationErrorResponse(ex.getBindingResult(), ex);
-            case HandlerMethodValidationException ex -> {
-                log.error("Ошибка валидации: {}", ex.getMessage(), ex.getValueResults());
-
-
-
-                yield  buildErrorResponse(
+            case InvalidFormatException ex -> {
+                log.error("Ошибка корректности входных параметров запроса: {}", ex.getMessage(), ex);
+                yield buildErrorResponse(
                         HttpStatus.BAD_REQUEST,
-                        ex.getMessage(),
+                        "Неверный формат данных для поля <%s>. Ожидаемый тип: %s"
+                                .formatted(ex.getPath().getFirst().getPropertyName(), ex.getTargetType().getSimpleName()),
+                        cause.getClass().getSimpleName()
+                );
+            }
+            case MismatchedInputException ex -> {
+                log.error("Ошибка корректности входных параметров запроса: {}", ex.getMessage(), ex);
+                yield buildErrorResponse(
+                        HttpStatus.BAD_REQUEST,
+                        "Неверный формат данных для поля <%s>. Ожидаемый тип: %s"
+                                .formatted(ex.getPath().getFirst().getPropertyName(), ex.getTargetType().getSimpleName()),
+                        cause.getClass().getSimpleName()
+                );
+            }
+            case HandlerMethodValidationException ex -> {
+                List<String> errorMessages = new ArrayList<>();
+                ex.getParameterValidationResults().forEach(res -> {
+                    errorMessages.add(res.getResolvableErrors().stream()
+                            .map(MessageSourceResolvable::getDefaultMessage)
+                            .collect(Collectors.joining(". ")));
+                });
+
+                log.error("Ошибка валидации: {}", errorMessages, ex);
+                yield buildErrorResponse(
+                        HttpStatus.UNPROCESSABLE_CONTENT,
+                        "Ошибка валидации: " + errorMessages,
                         cause.getClass().getSimpleName()
                 );
             }
@@ -88,6 +119,22 @@ public class GlobalExceptionHandler {
                 yield buildErrorResponse(
                         HttpStatus.BAD_REQUEST,
                         "Отсутствует тело запроса",
+                        cause.getClass().getSimpleName()
+                );
+            }
+            case HttpRequestMethodNotSupportedException ex -> {
+                log.error("Не найдено обработчика для ресурса с методом {}: {}", ex.getMethod(), ex.getMessage(), ex);
+                yield buildErrorResponse(
+                        HttpStatus.METHOD_NOT_ALLOWED,
+                        "Метод %s не поддерживается для этого ресурса".formatted(ex.getMethod()),
+                        cause.getClass().getSimpleName()
+                );
+            }
+            case NoResourceFoundException ex -> {
+                log.error("Не найден ресурс: {}", ex.getMessage(), ex);
+                yield buildErrorResponse(
+                        HttpStatus.NOT_FOUND,
+                        "Ресурс <%s> не найден".formatted(ex.getResourcePath()),
                         cause.getClass().getSimpleName()
                 );
             }
