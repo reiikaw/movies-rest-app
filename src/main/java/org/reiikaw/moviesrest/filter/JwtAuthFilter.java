@@ -29,7 +29,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_TOKEN = "Bearer ";
 
-    private static final List<String> PUBLIC_PATHS = Arrays.asList("/api/v1/auth/");
+    private static final List<String> PUBLIC_PATHS = Arrays.asList("/api/v1/auth/", "/swagger-ui/", "/swagger-ui/index.html", "/v3/api-docs");
     private static final List<String> PUBLIC_METHODS = Arrays.asList(HttpMethod.OPTIONS.name());
 
     private final JwtService jwtService;
@@ -57,12 +57,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (StringUtils.isEmpty(authHeader)) {
                 throw new ServerLogicException(
                         HttpStatus.UNAUTHORIZED,
-                        "Отсутствует токен доступа"
+                        "Пользователь не авторизован. Отсутствует токен доступа"
                 );
             } else if (!StringUtils.startsWith(authHeader, BEARER_TOKEN)) {
                 throw new ServerLogicException(
                         HttpStatus.UNAUTHORIZED,
-                        "Некорректный токен доступа"
+                        "Пользователь не авторизован. Некорректный токен доступа"
                 );
             }
 
@@ -92,7 +92,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     null,
                     new ServerLogicException(
                             HttpStatus.UNAUTHORIZED,
-                            "Токен доступа просрочен",
+                            "Пользователь не авторизован. Токен доступа просрочен",
                             e.getClass().getName()
                     )
             );

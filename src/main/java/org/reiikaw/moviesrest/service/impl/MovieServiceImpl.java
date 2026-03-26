@@ -40,16 +40,24 @@ public class MovieServiceImpl extends BaseServiceImpl<Movie, MovieProcessDto, UU
 
     @Override
     public Page<Movie> findAllAvailableMovies(Integer page, Integer size) {
-        return repository.findAllByAvailable(true, PageRequest.of(page, size));
+        if (userService.getCurrentUser().getIsAdmin()) {
+            return repository.findAll(PageRequest.of(page, size));
+        } else {
+            return repository.findAllByAvailable(true, PageRequest.of(page, size));
+        }
     }
 
     @Override
     public Movie findAvailableMovieById(UUID movieId) {
-        return repository.findByIdAndAvailable(true, movieId).orElseThrow(() ->
-                new ServerLogicException(
-                        HttpStatus.NOT_FOUND,
-                        "Сущность с идентификатором <%s> не найдена или недоступна".formatted(movieId))
-        );
+        if (userService.getCurrentUser().getIsAdmin()) {
+            return findById(movieId);
+        } else {
+            return repository.findByIdAndAvailable(true, movieId).orElseThrow(() ->
+                    new ServerLogicException(
+                            HttpStatus.NOT_FOUND,
+                            "Сущность с идентификатором <%s> не найдена или недоступна".formatted(movieId))
+            );
+        }
     }
 
     @Override
