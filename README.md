@@ -7,7 +7,7 @@
 movies (
     id uuid NOTNULL UNIQUE PK,      // идентификатор фильма
     title varchar(255) NOTNULL,     // название фильма
-    director varchar(255) NOTNULL,  // режисер фильма
+    director varchar(255) NOTNULL,  // режиссер фильма
     release_year int4 NOTNULL,      // год показа
     rating float8 NOTNULL,          // рейтинг фильма
     available bool NOTNULL          // доступность
@@ -22,7 +22,7 @@ movies (
 users (
     id uuid NOTNULL UNIQUE PK,      // идентификатор пользователя
     username varchar(255) NOTNULL,  // имя пользователя
-    password varchar(255) NOTNULL,  // хеш пароля пользователя
+    password varchar(255) NOTNULL,  // хэш пароля пользователя
     is_admin bool NOTNULL,          // флаг прав администратора
     registered_at timestamp NOTNULL // дата и время регистрации
 )
@@ -69,5 +69,5 @@ docker build -t movies-rest-app .
 docker run -p 8080:8080 --env-file=.env movies-rest-app
 ```
 
-### Список конечных точек приложения
+### Swagger OpenAPI
 Swagger доступен по ссылке после запуска приложения: `http://localhost:8080/swagger-ui/index.html#/`
